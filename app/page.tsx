@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from "react";
 import {
   DndContext,
@@ -10,7 +11,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 
-// Draggable item component
+// Draggable Item
 function DraggableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
@@ -35,7 +36,7 @@ function DraggableItem({ id }: { id: string }) {
   );
 }
 
-// Droppable area component
+// Droppable Area
 function DroppableArea({ children }: { children: React.ReactNode }) {
   const { setNodeRef } = useDroppable({
     id: "droppable",
@@ -52,26 +53,31 @@ function DroppableArea({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Main page component
+// Main Page
 export default function HomePage() {
   const [droppedItems, setDroppedItems] = useState<string[]>([]);
 
+  // Use sensors with drag constraint
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Prevent drag from triggering on click
+      },
+    })
+  );
+
+  // Only add item if actually dropped over the droppable area
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
 
-    if (over && over.id === "droppable") {
+    // Debug log
+    console.log("Dropped over:", over?.id);
+
+    if (over?.id === "droppable") {
       const id = String(active.id);
       setDroppedItems((prev) => (prev.includes(id) ? prev : [...prev, id]));
     }
   };
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Require a small drag movement to activate
-      },
-    })
-  );
 
   const items = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
 
@@ -84,7 +90,7 @@ export default function HomePage() {
       <div className="max-w-xl mx-auto mt-10 p-4">
         <h1 className="text-2xl font-bold mb-4">Draggable Items</h1>
 
-        {/* Draggable Items */}
+        {/* List of items to drag */}
         <div className="flex flex-wrap">
           {items.map((id) =>
             droppedItems.includes(id) ? null : (
@@ -93,7 +99,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Droppable Area */}
+        {/* Droppable zone */}
         <DroppableArea>
           {droppedItems.map((id) => (
             <div
