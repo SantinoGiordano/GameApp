@@ -2,16 +2,16 @@
 import React, { useState } from "react";
 import {
   DndContext,
-  closestCenter,
   useDraggable,
   useDroppable,
+  rectIntersection,
   DragEndEvent,
-  PointerSensor,
   useSensor,
   useSensors,
+  PointerSensor,
 } from "@dnd-kit/core";
 
-// Draggable Item
+// Draggable item
 function DraggableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
@@ -36,80 +36,101 @@ function DraggableItem({ id }: { id: string }) {
   );
 }
 
-// Droppable Area
-function DroppableArea({ children }: { children: React.ReactNode }) {
-  const { setNodeRef } = useDroppable({
-    id: "droppable",
-  });
+// Droppable area
+function DroppableArea({
+  id,
+  label,
+  color,
+  children,
+}: {
+  id: string;
+  label: string;
+  color: "red" | "green";
+  children: React.ReactNode;
+}) {
+  const { setNodeRef } = useDroppable({ id });
+
+  const style =
+    color === "red"
+      ? "border-red-500 bg-red-100"
+      : "border-green-500 bg-green-100";
 
   return (
     <div
       ref={setNodeRef}
-      className="min-h-[200px] p-4 mt-6 border-2 border-dashed border-gray-400 bg-gray-100"
+      className={`flex-1 min-h-[200px] p-4 border-2 border-dashed rounded ${style}`}
     >
-      <h2 className="text-gray-700 mb-2 font-semibold">Drop Items Here</h2>
-      <div className="flex flex-wrap">{children}</div>
+      <h2 className="text-center font-semibold text-gray-700 mb-2">{label}</h2>
+      <div className="flex flex-wrap justify-center">{children}</div>
     </div>
   );
 }
 
-// Main Page
+// Main page
 export default function HomePage() {
-  const [droppedItems, setDroppedItems] = useState<string[]>([]);
+  const [areaRed, setAreaRed] = useState<string[]>([]);
+  const [areaGreen, setAreaGreen] = useState<string[]>([]);
 
-  // Use sensors with drag constraint
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Prevent drag from triggering on click
+        distance: 8,
       },
     })
   );
 
-  // Only add item if actually dropped over the droppable area
   const handleDragEnd = (event: DragEndEvent) => {
-    const { over, active } = event;
+    const { active, over } = event;
+    if (!over) return;
 
-    // Debug log
-    console.log("Dropped over:", over?.id);
+    const id = String(active.id);
+    const target = over.id;
 
-    if (over?.id === "droppable") {
-      const id = String(active.id);
-      setDroppedItems((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    // Remove item from both first
+    setAreaRed((prev) => prev.filter((item) => item !== id));
+    setAreaGreen((prev) => prev.filter((item) => item !== id));
+
+    // Add to appropriate area
+    if (target === "red") {
+      setAreaRed((prev) => [...prev, id]);
+    } else if (target === "green") {
+      setAreaGreen((prev) => [...prev, id]);
     }
   };
 
-  const items = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
+  const allItems = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
+  const assigned = new Set([...areaRed, ...areaGreen]);
+  const availableItems = allItems.filter((id) => !assigned.has(id));
 
   return (
     <DndContext
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
       sensors={sensors}
+      collisionDetection={rectIntersection}
+      onDragEnd={handleDragEnd}
     >
-      <div className="max-w-xl mx-auto mt-10 p-4">
-        <h1 className="text-2xl font-bold mb-4">Draggable Items</h1>
+      <div className="max-w-4xl mx-auto mt-10 p-4">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Drag Items Into Red or Green Boxes
+        </h1>
 
-        {/* List of items to drag */}
-        <div className="flex flex-wrap">
-          {items.map((id) =>
-            droppedItems.includes(id) ? null : (
-              <DraggableItem key={id} id={id} />
-            )
-          )}
+        <div className="flex flex-wrap justify-center mb-8">
+          {availableItems.map((id) => (
+            <DraggableItem key={id} id={id} />
+          ))}
         </div>
 
-        {/* Droppable zone */}
-        <DroppableArea>
-          {droppedItems.map((id) => (
-            <div
-              key={id}
-              className="p-2 m-1 bg-green-300 border border-green-600 rounded"
-            >
-              Item {id}
-            </div>
-          ))}
-        </DroppableArea>
+        <div className="flex flex-col md:flex-row gap-4">
+          <DroppableArea id="red" label="Red Zone" color="red">
+            {areaRed.map((id) => (
+              <DraggableItem key={id} id={id} />
+            ))}
+          </DroppableArea>
+          <DroppableArea id="green" label="Green Zone" color="green">
+            {areaGreen.map((id) => (
+              <DraggableItem key={id} id={id} />
+            ))}
+          </DroppableArea>
+        </div>
       </div>
     </DndContext>
   );
