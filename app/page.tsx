@@ -98,6 +98,11 @@ export default function HomePage() {
     }
   };
 
+  const handleRecall = () => {
+    setAreaRed([]);
+    setAreaGreen([]);
+  };
+
   const allItems = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const assigned = new Set([...areaRed, ...areaGreen]);
   const availableItems = allItems.filter((id) => !assigned.has(id));
@@ -117,7 +122,8 @@ export default function HomePage() {
           Drag Items Into Red or Green Boxes
         </h1>
 
-        <Recall />
+        {/* Pass handler to Recall button */}
+        <Recall onRecall={handleRecall} />
 
         <DroppableArea id="available" label="Available Items" color="gray">
           {availableItems.map((id) => (
