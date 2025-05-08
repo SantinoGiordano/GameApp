@@ -10,6 +10,7 @@ import {
   useSensors,
   PointerSensor,
 } from '@dnd-kit/core';
+import Recall from './components/recall';
 
 
 function DraggableItem({ id }: { id: string }) {
@@ -112,7 +113,8 @@ export default function HomePage() {
           Drag Items Into Red or Green Boxes
         </h1>
 
-        {/* Available Items */}
+        <Recall/>
+        
         <DroppableArea id="available" label="Available Items" color="gray">
           {availableItems.map((id) => (
             <DraggableItem key={id} id={id} />
