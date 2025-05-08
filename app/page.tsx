@@ -89,13 +89,17 @@ export default function HomePage() {
     const id = String(active.id);
     const target = over.id;
 
+    // Remove the item from all zones first
     setAreaRed((prev) => prev.filter((item) => item !== id));
     setAreaGreen((prev) => prev.filter((item) => item !== id));
 
+    // Then reassign only if not dropping into trash
     if (target === 'red') {
       setAreaRed((prev) => [...prev, id]);
     } else if (target === 'green') {
       setAreaGreen((prev) => [...prev, id]);
+    } else if (target === 'trash') {
+      console.log(`Item ${id} deleted`);
     }
   };
 
@@ -114,17 +118,16 @@ export default function HomePage() {
 
   return (
     <DndContext
-    sensors={sensors}
-    collisionDetection={rectIntersection}
-    onDragEnd={handleDragEnd}
+      sensors={sensors}
+      collisionDetection={rectIntersection}
+      onDragEnd={handleDragEnd}
     >
-      <Trash/>
       <div className="max-w-4xl mx-auto mt-10 p-4">
         <h1 className="text-2xl font-bold text-center mb-6">
           Drag Items Into Red or Green Boxes
         </h1>
 
-        <Recall onRecall={handleRecall} />
+        <Recall onRecall={handleRecall} /><Trash />
 
         <DroppableArea id="available" label="Available Items" color="gray">
           {availableItems.map((id) => (
