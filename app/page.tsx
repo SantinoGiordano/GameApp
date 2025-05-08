@@ -1,5 +1,5 @@
-'use client'
-import React, { useState } from "react";
+'use client';
+import React, { useState } from 'react';
 import {
   DndContext,
   useDraggable,
@@ -9,9 +9,9 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 
-// Draggable item
+
 function DraggableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
@@ -36,7 +36,7 @@ function DraggableItem({ id }: { id: string }) {
   );
 }
 
-// Droppable area
+
 function DroppableArea({
   id,
   label,
@@ -45,37 +45,35 @@ function DroppableArea({
 }: {
   id: string;
   label: string;
-  color: "red" | "green";
+  color?: 'red' | 'green' | 'gray';
   children: React.ReactNode;
 }) {
   const { setNodeRef } = useDroppable({ id });
 
-  const style =
-    color === "red"
-      ? "border-red-500 bg-red-100"
-      : "border-green-500 bg-green-100";
+  const base = 'border-dashed border-2 rounded p-4 min-h-[200px]';
+  const colorClasses =
+    color === 'red'
+      ? 'border-red-500 bg-red-100'
+      : color === 'green'
+      ? 'border-green-500 bg-green-100'
+      : 'border-gray-300 bg-gray-100';
 
   return (
-    <div
-      ref={setNodeRef}
-      className={`flex-1 min-h-[200px] p-4 border-2 border-dashed rounded ${style}`}
-    >
+    <div className={`${base} ${colorClasses}`} ref={setNodeRef}>
       <h2 className="text-center font-semibold text-gray-700 mb-2">{label}</h2>
       <div className="flex flex-wrap justify-center">{children}</div>
     </div>
   );
 }
 
-// Main page
+
 export default function HomePage() {
   const [areaRed, setAreaRed] = useState<string[]>([]);
   const [areaGreen, setAreaGreen] = useState<string[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+      activationConstraint: { distance: 8 },
     })
   );
 
@@ -86,19 +84,20 @@ export default function HomePage() {
     const id = String(active.id);
     const target = over.id;
 
-    // Remove item from both first
+    // Remove from all zones
     setAreaRed((prev) => prev.filter((item) => item !== id));
     setAreaGreen((prev) => prev.filter((item) => item !== id));
 
-    // Add to appropriate area
-    if (target === "red") {
+    // Add to appropriate zone
+    if (target === 'red') {
       setAreaRed((prev) => [...prev, id]);
-    } else if (target === "green") {
+    } else if (target === 'green') {
       setAreaGreen((prev) => [...prev, id]);
     }
+    // If target is 'available', do nothing (it's already removed)
   };
 
-  const allItems = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
+  const allItems = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const assigned = new Set([...areaRed, ...areaGreen]);
   const availableItems = allItems.filter((id) => !assigned.has(id));
 
@@ -113,13 +112,16 @@ export default function HomePage() {
           Drag Items Into Red or Green Boxes
         </h1>
 
-        <div className="flex flex-wrap justify-center mb-8">
+        {/* Available Items */}
+        <DroppableArea id="available" label="Available Items" color="gray">
           {availableItems.map((id) => (
             <DraggableItem key={id} id={id} />
           ))}
-        </div>
+        </DroppableArea>
 
-        <div className="flex flex-col md:flex-row gap-4">
+        {/* Drop Zones */}
+        <div className="flex flex-col md:flex-row gap-4 mt-6 justify-center items-start text-center">
+
           <DroppableArea id="red" label="Red Zone" color="red">
             {areaRed.map((id) => (
               <DraggableItem key={id} id={id} />
