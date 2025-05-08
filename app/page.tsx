@@ -12,6 +12,7 @@ import {
   PointerSensor,
 } from '@dnd-kit/core';
 import Recall from './components/recall';
+import Trash from './components/trash';
 
 function DraggableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -113,16 +114,16 @@ export default function HomePage() {
 
   return (
     <DndContext
-      sensors={sensors}
-      collisionDetection={rectIntersection}
-      onDragEnd={handleDragEnd}
+    sensors={sensors}
+    collisionDetection={rectIntersection}
+    onDragEnd={handleDragEnd}
     >
+      <Trash/>
       <div className="max-w-4xl mx-auto mt-10 p-4">
         <h1 className="text-2xl font-bold text-center mb-6">
           Drag Items Into Red or Green Boxes
         </h1>
 
-        {/* Pass handler to Recall button */}
         <Recall onRecall={handleRecall} />
 
         <DroppableArea id="available" label="Available Items" color="gray">
