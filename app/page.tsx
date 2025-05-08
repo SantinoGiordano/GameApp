@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import {
   DndContext,
   useDraggable,
@@ -11,7 +12,6 @@ import {
   PointerSensor,
 } from '@dnd-kit/core';
 import Recall from './components/recall';
-
 
 function DraggableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -36,7 +36,6 @@ function DraggableItem({ id }: { id: string }) {
     </div>
   );
 }
-
 
 function DroppableArea({
   id,
@@ -67,10 +66,14 @@ function DroppableArea({
   );
 }
 
-
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
   const [areaRed, setAreaRed] = useState<string[]>([]);
   const [areaGreen, setAreaGreen] = useState<string[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -85,22 +88,23 @@ export default function HomePage() {
     const id = String(active.id);
     const target = over.id;
 
-    // Remove from all zones
     setAreaRed((prev) => prev.filter((item) => item !== id));
     setAreaGreen((prev) => prev.filter((item) => item !== id));
 
-    // Add to appropriate zone
     if (target === 'red') {
       setAreaRed((prev) => [...prev, id]);
     } else if (target === 'green') {
       setAreaGreen((prev) => [...prev, id]);
     }
-    // If target is 'available', do nothing (it's already removed)
   };
 
   const allItems = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const assigned = new Set([...areaRed, ...areaGreen]);
   const availableItems = allItems.filter((id) => !assigned.has(id));
+
+  if (!mounted) {
+    return null; // Prevent SSR mismatch
+  }
 
   return (
     <DndContext
@@ -113,22 +117,21 @@ export default function HomePage() {
           Drag Items Into Red or Green Boxes
         </h1>
 
-        <Recall/>
-        
+        <Recall />
+
         <DroppableArea id="available" label="Available Items" color="gray">
           {availableItems.map((id) => (
             <DraggableItem key={id} id={id} />
           ))}
         </DroppableArea>
 
-        {/* Drop Zones */}
         <div className="flex flex-col md:flex-row gap-4 mt-6 justify-center items-start text-center">
-
           <DroppableArea id="red" label="Red Zone" color="red">
             {areaRed.map((id) => (
               <DraggableItem key={id} id={id} />
             ))}
           </DroppableArea>
+
           <DroppableArea id="green" label="Green Zone" color="green">
             {areaGreen.map((id) => (
               <DraggableItem key={id} id={id} />
