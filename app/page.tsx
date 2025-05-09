@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   DndContext,
   useDraggable,
@@ -10,9 +10,9 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-} from '@dnd-kit/core';
-import Recall from './components/recall';
-import Trash from './components/trash';
+} from "@dnd-kit/core";
+import Recall from "./components/recall";
+import Trash from "./components/trash";
 
 function DraggableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -46,18 +46,18 @@ function DroppableArea({
 }: {
   id: string;
   label: string;
-  color?: 'red' | 'green' | 'gray';
+  color?: "red" | "green" | "gray";
   children: React.ReactNode;
 }) {
   const { setNodeRef } = useDroppable({ id });
 
-  const base = 'border-dashed border-2 rounded p-4 min-h-[200px]';
+  const base = "border-dashed border-2 rounded p-4 min-h-[200px]";
   const colorClasses =
-    color === 'red'
-      ? 'border-red-500 bg-red-100'
-      : color === 'green'
-      ? 'border-green-500 bg-green-100'
-      : 'border-gray-300 bg-gray-100';
+    color === "red"
+      ? "border-red-500 bg-red-100"
+      : color === "green"
+      ? "border-green-500 bg-green-100"
+      : "border-gray-300 bg-gray-100";
 
   return (
     <div className={`${base} ${colorClasses}`} ref={setNodeRef}>
@@ -95,11 +95,11 @@ export default function HomePage() {
     setAreaGreen((prev) => prev.filter((item) => item !== id));
 
     // Handle drop targets
-    if (target === 'red') {
+    if (target === "red") {
       setAreaRed((prev) => [...prev, id]);
-    } else if (target === 'green') {
+    } else if (target === "green") {
       setAreaGreen((prev) => [...prev, id]);
-    } else if (target === 'trash') {
+    } else if (target === "trash") {
       setDeletedItems((prev) => [...prev, id]);
     }
   };
