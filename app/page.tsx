@@ -71,6 +71,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [areaRed, setAreaRed] = useState<string[]>([]);
   const [areaGreen, setAreaGreen] = useState<string[]>([]);
+  const [deletedItems, setDeletedItems] = useState<string[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -89,32 +90,33 @@ export default function HomePage() {
     const id = String(active.id);
     const target = over.id;
 
-    // Remove the item from all zones first
+    // Remove from zones
     setAreaRed((prev) => prev.filter((item) => item !== id));
     setAreaGreen((prev) => prev.filter((item) => item !== id));
 
-    // Then reassign only if not dropping into trash
+    // Handle drop targets
     if (target === 'red') {
       setAreaRed((prev) => [...prev, id]);
     } else if (target === 'green') {
       setAreaGreen((prev) => [...prev, id]);
     } else if (target === 'trash') {
-      console.log(`Item ${id} deleted`);
+      setDeletedItems((prev) => [...prev, id]);
     }
   };
 
   const handleRecall = () => {
     setAreaRed([]);
     setAreaGreen([]);
+    setDeletedItems([]); // Also recall deleted items
   };
 
   const allItems = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const assigned = new Set([...areaRed, ...areaGreen]);
-  const availableItems = allItems.filter((id) => !assigned.has(id));
+  const availableItems = allItems.filter(
+    (id) => !assigned.has(id) && !deletedItems.includes(id)
+  );
 
-  if (!mounted) {
-    return null; // Prevent SSR mismatch
-  }
+  if (!mounted) return null;
 
   return (
     <DndContext
@@ -127,7 +129,8 @@ export default function HomePage() {
           Drag Items Into Red or Green Boxes
         </h1>
 
-        <Recall onRecall={handleRecall} /><Trash />
+        <Recall onRecall={handleRecall} />
+        <Trash />
 
         <DroppableArea id="available" label="Available Items" color="gray">
           {availableItems.map((id) => (
